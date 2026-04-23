@@ -1,219 +1,220 @@
-# Portfolio Risk Analysis B3
+# Portfolio Risk Analysis — B3
 
-> Análise quantitativa de risco de carteira de ações da B3 utilizando metodologias usadas na indústria financeira: VaR, CVaR, Beta de mercado, Simulação de Monte Carlo e Fronteira Eficiente de Markowitz.
+> Quantitative risk analysis of a B3 equity portfolio using industry-standard methodologies: VaR, CVaR, Market Beta, Monte Carlo Simulation and Markowitz Efficient Frontier.
 
 ---
 
-## Visão Geral
+## Overview
 
-Este projeto implementa um pipeline completo de **risk management quantitativo** voltado para o mercado de renda variável brasileiro. Desenvolvido como portfólio técnico para posições em bancos de investimento, o código demonstra domínio das metodologias exigidas em áreas de **Risk, Quant Finance e Structuring**.
+This project implements a complete **quantitative risk management pipeline** focused on the Brazilian equity market. Built as a technical portfolio for investment banking positions, the codebase demonstrates command of the methodologies required in **Risk, Quant Finance and Structuring** roles.
 
-**Carteira analisada:** ITUB4, BBDC4, PETR4, VALE3, BBAS3 (igualmente ponderada, 20% cada)  
+**Portfolio:** ITUB4, BBDC4, PETR4, VALE3, BBAS3 (equally weighted, 20% each)  
 **Benchmark:** Ibovespa (^BVSP)  
-**Horizonte:** 3 anos de dados históricos via yfinance
+**Horizon:** 3 years of historical data via yfinance
 
 ---
 
-## Metodologias Implementadas
+## Methodologies
 
 ### Value at Risk (VaR)
 
-Medida de risco que responde: *"Qual é a perda máxima esperada em um dia com X% de confiança?"*
+A risk measure that answers: *"What is the maximum expected loss in a single day at X% confidence?"*
 
-| Método | Premissa | Vantagem | Limitação |
+| Method | Assumption | Advantage | Limitation |
 |---|---|---|---|
-| **Paramétrico** | Retornos seguem distribuição normal | Analítico, rápido | Subestima fat tails |
-| **Histórico** | Distribuição empírica dos retornos passados | Captura assimetria real | Depende da janela histórica |
-| **Monte Carlo** | Simulação de N cenários com µ e σ históricos | Flexível, extensível para GBM | Computacionalmente intensivo |
+| **Parametric** | Returns follow a normal distribution | Analytical, fast | Underestimates fat tails |
+| **Historical** | Empirical distribution of past returns | Captures real asymmetry | Depends on the historical window |
+| **Monte Carlo** | Simulates N scenarios using historical µ and σ | Flexible, extensible to GBM | Computationally intensive |
 
 ### CVaR / Expected Shortfall (ES)
 
-O **CVaR** (Conditional Value at Risk) é a perda média nos cenários que *excedem* o VaR:
+**CVaR** (Conditional Value at Risk) is the average loss in scenarios that *exceed* the VaR:
 
 ```
 CVaR_α = E[L | L > VaR_α]
 ```
 
-**Por que Basel III prefere CVaR ao VaR?**  
-O VaR ignora a magnitude das perdas na cauda, dois portfólios com o mesmo VaR de 2% podem ter CVaRs de 3% e 8%. O CVaR é uma medida de risco coerente (satisfaz subaditividade), o que incentiva diversificação. O framework **FRTB (Basel IV)** substituiu VaR por ES como métrica padrão de capital regulatório.
+**Why does Basel III prefer CVaR over VaR?**  
+VaR ignores the magnitude of losses in the tail — two portfolios with the same 2% VaR can have CVaRs of 3% and 8% respectively. CVaR is a coherent risk measure (satisfies subadditivity), which incentivizes diversification. The **FRTB (Basel IV)** framework replaced VaR with Expected Shortfall as the standard regulatory capital metric.
 
-### Beta de Mercado
+### Market Beta
 
-O Beta mede a sensibilidade do ativo em relação ao mercado (Ibovespa):
+Beta measures the sensitivity of an asset relative to the market (Ibovespa):
 
 ```
-β = Cov(R_ativo, R_mercado) / Var(R_mercado)
+β = Cov(R_asset, R_market) / Var(R_market)
 ```
 
-| Beta | Interpretação |
+| Beta | Interpretation |
 |---|---|
-| β > 1 | Ativo mais volátil que o mercado (agressivo) |
-| β = 1 | Move exatamente com o mercado |
-| 0 < β < 1 | Menos volátil que o mercado (defensivo) |
-| β < 0 | Move inversamente ao mercado (hedge natural) |
+| β > 1 | More volatile than the market (aggressive) |
+| β = 1 | Moves exactly with the market |
+| 0 < β < 1 | Less volatile than the market (defensive) |
+| β < 0 | Moves inversely to the market (natural hedge) |
 
-### Simulação de Monte Carlo
+### Monte Carlo Simulation
 
-Gera **10.000 cenários** de retorno diário amostrados de uma distribuição normal com parâmetros calibrados nos dados históricos. Permite estimar VaR e CVaR sem premissas analíticas sobre a forma da distribuição.
+Generates **10,000 daily return scenarios** sampled from a normal distribution calibrated on historical parameters. Enables VaR and CVaR estimation without analytical assumptions about the shape of the distribution.
 
-**Extensão natural:** simulação multivariada com Cholesky decomposition para preservar a estrutura de correlação entre ativos (GBM multivariado).
+**Natural extension:** multivariate simulation with Cholesky decomposition to preserve the correlation structure across assets (multivariate GBM).
 
-### Fronteira Eficiente de Markowitz
+### Markowitz Efficient Frontier
 
-Baseada na Teoria Moderna do Portfólio (Markowitz, 1952), busca carteiras que **maximizam retorno para dado nível de risco**.
+Based on Modern Portfolio Theory (Markowitz, 1952), it identifies portfolios that **maximize return for a given level of risk**.
 
 **Sharpe Ratio:**
 ```
 Sharpe = (E[R_p] - Rf) / σ_p
 ```
 
-Três portfólios são identificados e comparados:
+Three portfolios are identified and compared:
 
-| Portfólio | Critério | Uso |
+| Portfolio | Criterion | Use Case |
 |---|---|---|
-| **Máximo Sharpe** | Maximiza retorno ajustado ao risco | Alocação padrão |
-| **Mínima Variância** | Minimiza volatilidade da carteira | Perfil conservador |
-| **Igualmente Ponderado** | 20% em cada ativo (baseline) | Benchmark ingênuo |
+| **Maximum Sharpe** | Maximizes risk-adjusted return | Standard allocation |
+| **Minimum Variance** | Minimizes portfolio volatility | Conservative profile |
+| **Equally Weighted** | 20% in each asset (baseline) | Naïve benchmark |
 
 ---
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 portfolio-risk-analysis/
-├── analysis.py          <- pipeline principal (único arquivo a executar)
-├── requirements.txt     <- dependências pinadas
-├── README.md            <- esta documentação
-└── .gitignore           <- ignora outputs, __pycache__, .env
+├── analysis.py          <- main pipeline (single file to run)
+├── requirements.txt     <- pinned dependencies
+├── README.md            <- this documentation
+└── .gitignore           <- ignores outputs, __pycache__, .env
 ```
 
 ---
 
-## Instalação e Execução
+## Installation and Usage
 
 ```bash
-# 1. Clonar o repositório
+# 1. Clone the repository
 git clone https://github.com/Kaique-Pinheiro/portfolio-risk-analysis.git
 cd portfolio-risk-analysis
 
-# 2. Criar ambiente virtual (recomendado)
+# 2. Create a virtual environment (recommended)
 python -m venv venv
 source venv/bin/activate        # Linux/Mac
 venv\Scripts\activate           # Windows
 
-# 3. Instalar dependências
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Executar o pipeline
+# 4. Run the pipeline
 python analysis.py
 ```
 
-**Requisitos:** Python 3.10+
+**Requirements:** Python 3.10+
 
 ---
 
-## Dependências
+## Dependencies
 
 ```
-yfinance>=0.2.40    # Download de dados históricos da B3
-pandas>=2.0         # Manipulação de séries temporais
-numpy>=1.26         # Álgebra linear e operações vetorizadas
-matplotlib>=3.8     # Visualizações e subplots
-scipy>=1.12         # Distribuições estatísticas e otimização SLSQP
+yfinance>=0.2.40    # Historical market data from B3 via Yahoo Finance
+pandas>=2.0         # Time series manipulation
+numpy>=1.26         # Linear algebra and vectorized operations
+matplotlib>=3.8     # Visualizations and subplots
+scipy>=1.12         # Statistical distributions and SLSQP optimization
 ```
 
 ---
 
-## Saídas do Programa
+## Output
 
-### Terminal (exemplo de saída)
+### Terminal (sample output)
 
 ```
 =================================================================
-[1] DOWNLOAD DE DADOS
+[1] DATA DOWNLOAD
 =================================================================
-  Ativos      : ['ITUB4.SA', 'BBDC4.SA', 'PETR4.SA', 'VALE3.SA', 'BBAS3.SA']
+  Tickers     : ['ITUB4.SA', 'BBDC4.SA', 'PETR4.SA', 'VALE3.SA', 'BBAS3.SA']
   Benchmark   : ^BVSP
-  Shape       : (754, 5) (dias x ativos)
-  Período     : 22/04/2023 -> 22/04/2026
-  Dados baixados com sucesso!
+  Shape       : (754, 5) (trading days x assets)
+  Period      : 22/04/2023 -> 22/04/2026
+  Data downloaded successfully!
 
 =================================================================
-[2] RETORNOS E ESTATÍSTICAS DESCRITIVAS
+[2] RETURNS AND DESCRIPTIVE STATISTICS
 =================================================================
-       Retorno Anual (%)  Volatilidade Anual (%)  Skewness  Kurtosis  Sharpe Ratio
-ITUB4             18.42                   28.61    -0.2341    3.1204        0.2981
+       Annual Return (%)  Annual Volatility (%)  Skewness  Kurtosis  Sharpe Ratio
+ITUB4             18.42                  28.61   -0.2341    3.1204        0.2981
 ...
 ```
 
-### Gráficos gerados (`risk_analysis.png`)
+### Generated charts (`risk_analysis.png`)
 
-| Subplot | Título | Descrição |
+| Subplot | Title | Description |
 |---|---|---|
-| 1 (topo) | Retorno Acumulado | Evolução dos 5 ativos em base 1.0 |
-| 2 | Distribuição + VaR | Histograma com curva normal e 3 linhas de VaR |
-| 3 | Heatmap de Correlação | Matriz de correlação com valores anotados |
-| 4 | VaR por Ativo | Bar chart comparativo do VaR histórico (95%) |
-| 5 | Monte Carlo | Histograma dos 10k cenários simulados |
-| 6 | Fronteira Eficiente | Scatter de 3.000 carteiras colorido por Sharpe |
+| 1 (top) | Cumulative Return | Evolution of the 5 assets on a 1.0 base |
+| 2 | Return Distribution + VaR | Histogram with fitted normal curve and 3 VaR lines |
+| 3 | Correlation Heatmap | Annotated correlation matrix |
+| 4 | VaR by Asset | Comparative bar chart of historical VaR (95%) |
+| 5 | Monte Carlo | Histogram of 10k simulated scenarios |
+| 6 (bottom) | Efficient Frontier | Scatter of 3,000 portfolios colored by Sharpe Ratio |
 
 ---
 
-## Ativos Analisados
+## Assets Analyzed
 
-| Ticker | Empresa | Setor |
+| Ticker | Company | Sector |
 |---|---|---|
-| ITUB4.SA | Itaú Unibanco | Financeiro — Bancos |
-| BBDC4.SA | Banco Bradesco | Financeiro — Bancos |
-| PETR4.SA | Petrobras | Energia — Petróleo e Gás |
-| VALE3.SA | Vale | Materiais — Mineração |
-| BBAS3.SA | Banco do Brasil | Financeiro — Bancos |
-| ^BVSP | Ibovespa | Benchmark de mercado |
+| ITUB4.SA | Itaú Unibanco | Financial — Banks |
+| BBDC4.SA | Banco Bradesco | Financial — Banks |
+| PETR4.SA | Petrobras | Energy — Oil & Gas |
+| VALE3.SA | Vale | Materials — Mining |
+| BBAS3.SA | Banco do Brasil | Financial — Banks |
+| ^BVSP | Ibovespa | Market benchmark |
 
-**Taxa livre de risco:** Selic ≈ 10,75% a.a. (referência para cálculo do Sharpe e VaR paramétrico)
+**Risk-free rate:** Selic ≈ 10.75% p.a. (used as Rf in Sharpe Ratio and parametric VaR)
 
 ---
 
-## Conceitos Financeiros Chave
+## Key Financial Concepts
 
-### Por que retornos logarítmicos?
-
-```python
-# Retorno simples (não-aditivo no tempo):
-ret_simples = (P_t / P_{t-1}) - 1
-
-# Retorno logarítmico (aditivo no tempo, propriedade essencial para séries temporais):
-ret_log = np.log(P_t / P_{t-1})
-```
-
-Retornos logarítmicos são preferidos porque: (1) são aditivos temporalmente, (2) assumem valores em (-∞, +∞) sem restrição de -100%, (3) são mais compatíveis com a hipótese de normalidade.
-
-### Por que anualizar com √252?
+### Why logarithmic returns?
 
 ```python
-# 252 = número médio de dias de negociação por ano na B3
-volatilidade_anual = volatilidade_diaria * np.sqrt(252)
-retorno_anual      = retorno_diario_medio * 252
+# Simple return (not time-additive):
+simple_ret = (P_t / P_{t-1}) - 1
+
+# Log return (time-additive — essential property for time series modeling):
+log_ret = np.log(P_t / P_{t-1})
 ```
 
-Decorre da propriedade de que, se retornos diários são i.i.d., a variância anual é 252× a variância diária, portanto o desvio padrão anual é √252× o desvio padrão diário.
+Log returns are preferred because: (1) they are time-additive, meaning weekly return equals the sum of daily returns; (2) they are unbounded below, avoiding the -100% floor constraint; (3) they are more compatible with the normality assumption required by parametric models.
 
-### Por que comparar VaR Paramétrico vs Histórico?
+### Why annualize with √252?
 
-Mercados financeiros exibem **fat tails**, eventos extremos ocorrem com frequência maior do que a distribuição normal prevê (fenômeno documentado por Mandelbrot e Taleb). Quando VaR Histórico > VaR Paramétrico, os dados confirmam que as caudas reais são mais pesadas que a normal, levando à validação empírica da escolha pelo CVaR como métrica regulatória.
+```python
+# 252 = average number of trading days per year on B3
+annual_volatility = daily_volatility * np.sqrt(252)
+annual_return     = mean_daily_return * 252
+```
 
+This follows from the i.i.d. assumption: if daily returns are independent and identically distributed, annual variance is 252× the daily variance — so annual standard deviation scales by √252.
 
-## Referências
+### Why compare Parametric vs Historical VaR?
+
+Financial markets exhibit **fat tails** — extreme events occur more frequently than a normal distribution predicts (documented by Mandelbrot and Taleb). When Historical VaR > Parametric VaR, the data confirms that real tails are heavier than the normal model assumes, providing empirical validation for the regulatory preference for CVaR.
+
+---
+
+## References
 
 - **Markowitz, H.** (1952). Portfolio Selection. *Journal of Finance*.
 - **J.P. Morgan / Reuters** (1996). *RiskMetrics Technical Document*.
-- **Hull, J.C.** (2018). *Risk Management and Financial Institutions*.
-- **Basel Committee on Banking Supervision** (2019).
+- **Hull, J.C.** (2018). *Risk Management and Financial Institutions*. Wiley.
+- **Basel Committee on Banking Supervision** (2019). *Minimum capital requirements for market risk (FRTB)*.
 
 ---
 
-## Autor
+## Author
 
-**Kaique Pinheiro** : Estudante de Ciência da Computação, FEI  
-GitHub: https://github.com/Kaique-Pinheiro  
+**Kaique Pinheiro** — Computer Science student, FEI  
+GitHub: [github.com/Kaique-Pinheiro](https://github.com/Kaique-Pinheiro)  
 Email: kaique.pinheiro.dev@gmail.com
